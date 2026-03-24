@@ -1,36 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# MarkdownStudio ✨
+
+A beautiful, distraction-free Markdown editor with live preview.
+
+![Next.js](https://img.shields.io/badge/Next.js-16-black)
+![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+
+## Features
+
+- **Split pane editor** — Write on the left, preview on the right with a resizable divider
+- **Full Markdown support** — Tables, code blocks, images, links, and more (GFM)
+- **Syntax highlighting** — Code blocks highlighted via highlight.js
+- **Multiple documents** — Open multiple files as tabs, double-click to rename
+- **Auto-save** — Content saved to localStorage every 5 seconds
+- **Distraction-free mode** — Hide all UI except the editor, press Escape to exit
+- **Word count & stats** — Words, characters, and reading time in the status bar
+- **Formatting toolbar** — Bold, italic, headings, links, code, lists, and more
+- **Export options** — Copy as HTML, print as PDF, download as `.md`
+- **Dark/Light mode** — Toggle between themes
+- **Keyboard shortcuts** — `Ctrl+B` bold, `Ctrl+I` italic, `Ctrl+S` save, `Ctrl+K` link
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+# Clone the repository
+git clone https://github.com/your-username/MarkdownStudio.git
+cd MarkdownStudio
+
+# Install dependencies
+npm install
+
+# Start development server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Tech Stack
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **Framework:** [Next.js 16](https://nextjs.org) (App Router)
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS 4
+- **State:** Zustand
+- **Markdown:** Marked + highlight.js
+- **Animations:** Framer Motion
+- **Icons:** Lucide React
 
-## Learn More
+## Keyboard Shortcuts
 
-To learn more about Next.js, take a look at the following resources:
+| Shortcut | Action |
+|----------|--------|
+| `Ctrl/⌘ + B` | Bold |
+| `Ctrl/⌘ + I` | Italic |
+| `Ctrl/⌘ + S` | Save |
+| `Ctrl/⌘ + K` | Insert link |
+| `Tab` | Indent |
+| `Escape` | Exit focus mode |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Storage
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+All documents are stored in `localStorage`. No server, no database, no account required. Your data stays in your browser.
 
-## Deploy on Vercel
+## License
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+[MIT](LICENSE) — do whatever you want with it.
