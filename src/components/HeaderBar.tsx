@@ -1,5 +1,6 @@
 'use client';
 
+import { useRef } from 'react';
 import { useEditorStore } from '@/store/editor';
 import {
   Sun,
@@ -12,14 +13,45 @@ import {
   Copy,
   Printer,
   FileText,
+  Upload,
+  FileJson,
+  FileType,
 } from 'lucide-react';
 import { renderMarkdown } from '@/lib/markdown';
 
 export default function HeaderBar() {
-  const { theme, toggleTheme, isDistractionFree, toggleDistractionFree, showPreview, togglePreview, documents, activeDocumentId } =
-    useEditorStore();
+  const {
+    theme, toggleTheme, isDistractionFree, toggleDistractionFree,
+    showPreview, togglePreview, documents, activeDocumentId,
+    updateContent, updateTitle, createDocument,
+  } = useEditorStore();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const activeDoc = documents.find((d) => d.id === activeDocumentId);
+
+  const handleImport = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+    Array.from(files).forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const text = ev.target?.result as string;
+        const name = file.name.replace(/\.(md|markdown|txt)$/i, '');
+        if (documents.length === 1 && activeDoc && activeDoc.content === `# ${activeDoc.title}\n\nStart writing...`) {
+          updateContent(text);
+          updateTitle(activeDoc.id, name);
+        } else {
+          createDocument(name);
+          // Small delay to allow state update
+          setTimeout(() => {
+            useEditorStore.getState().updateContent(text);
+          }, 50);
+        }
+      };
+      reader.readAsText(file);
+    });
+    e.target.value = '';
+  };
 
   const exportMd = () => {
     if (!activeDoc) return;
@@ -32,13 +64,43 @@ export default function HeaderBar() {
     URL.revokeObjectURL(url);
   };
 
+  const exportHtml = () => {
+    if (!activeDoc) return;
+    const html = renderMarkdown(activeDoc.content);
+    const fullHtml = `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>${activeDoc.title}</title>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; max-width: 800px; margin: 0 auto; padding: 40px; color: #1a1a1a; line-height: 1.6; }
+    pre { background: #f5f5f5; padding: 16px; border-radius: 6px; overflow-x: auto; }
+    code { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.9em; }
+    table { border-collapse: collapse; width: 100%; }
+    th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+    th { background: #f5f5f5; }
+    img { max-width: 100%; }
+    blockquote { border-left: 4px solid #ddd; margin: 0; padding-left: 16px; color: #555; }
+  </style>
+</head>
+<body>${html}</body>
+</html>`;
+    const blob = new Blob([fullHtml], { type: 'text/html' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${activeDoc.title}.html`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const copyHtml = async () => {
     if (!activeDoc) return;
     const html = renderMarkdown(activeDoc.content);
     try {
       await navigator.clipboard.writeText(html);
     } catch {
-      // Fallback
       const textarea = document.createElement('textarea');
       textarea.value = html;
       document.body.appendChild(textarea);
@@ -76,6 +138,8 @@ export default function HeaderBar() {
     win.print();
   };
 
+  const btnClass = "p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors";
+
   return (
     <header className="flex items-center justify-between px-4 py-2 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-700">
       <div className="flex items-center gap-2">
@@ -85,47 +149,39 @@ export default function HeaderBar() {
         </h1>
       </div>
       <div className="flex items-center gap-1">
-        <button
-          onClick={copyHtml}
-          title="Copy as HTML"
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
-        >
-          <Copy size={16} />
+        {/* Import */}
+        <button onClick={() => fileRef.current?.click()} title="Import .md / .txt files" className={btnClass}>
+          <Upload size={16} />
         </button>
-        <button
-          onClick={exportMd}
-          title="Download .md"
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
-        >
+        <input
+          ref={fileRef}
+          type="file"
+          accept=".md,.markdown,.txt,.text"
+          multiple
+          className="hidden"
+          onChange={handleImport}
+        />
+        {/* Export */}
+        <button onClick={exportMd} title="Download as .md" className={btnClass}>
           <Download size={16} />
         </button>
-        <button
-          onClick={printPdf}
-          title="Print / Save as PDF"
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
-        >
+        <button onClick={exportHtml} title="Export as .html" className={btnClass}>
+          <FileType size={16} />
+        </button>
+        <button onClick={copyHtml} title="Copy as HTML" className={btnClass}>
+          <Copy size={16} />
+        </button>
+        <button onClick={printPdf} title="Print / Save as PDF" className={btnClass}>
           <Printer size={16} />
         </button>
         <div className="w-px h-5 bg-gray-200 dark:bg-gray-700 mx-1" />
-        <button
-          onClick={togglePreview}
-          title={showPreview ? 'Hide Preview' : 'Show Preview'}
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
-        >
+        <button onClick={togglePreview} title={showPreview ? 'Hide Preview' : 'Show Preview'} className={btnClass}>
           {showPreview ? <EyeOff size={16} /> : <Eye size={16} />}
         </button>
-        <button
-          onClick={toggleDistractionFree}
-          title={isDistractionFree ? 'Exit Focus Mode' : 'Focus Mode'}
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
-        >
+        <button onClick={toggleDistractionFree} title={isDistractionFree ? 'Exit Focus Mode' : 'Focus Mode'} className={btnClass}>
           {isDistractionFree ? <Minimize size={16} /> : <Maximize size={16} />}
         </button>
-        <button
-          onClick={toggleTheme}
-          title={theme === 'light' ? 'Dark Mode' : 'Light Mode'}
-          className="p-2 rounded hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-500 dark:text-gray-400 transition-colors"
-        >
+        <button onClick={toggleTheme} title={theme === 'light' ? 'Dark Mode' : 'Light Mode'} className={btnClass}>
           {theme === 'light' ? <Moon size={16} /> : <Sun size={16} />}
         </button>
       </div>
